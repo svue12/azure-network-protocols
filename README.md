@@ -1,94 +1,175 @@
-<p align="center">
-<img src="https://i.imgur.com/Ua7udoS.png" alt="Traffic Examination"/>
-</p>
-
-<h1>Network Security Groups (NSGs) and Inspecting Traffic Between Azure Virtual Machines</h1>
-In this tutorial, we observe various network traffic to and from Azure Virtual Machines with Wireshark as well as experiment with Network Security Groups. <br />
-
-
-<h2>Video Demonstration</h2>
-
-- ### [YouTube: Azure Virtual Machines, Wireshark, and Network Security Groups](https://www.youtube.com)
+<h1>Network Security Groups (NSGs) and Inspecting Traffic Between Azure Virtual Machines using Wireshark</h1>
+In this tutorial, we will observe various network traffic to and from Azure Virtual Machines with Wireshark as well as experiment with Network Security Groups. <br />
 
 <h2>Environments and Technologies Used</h2>
 
 - Microsoft Azure (Virtual Machines/Compute)
 - Remote Desktop
 - Various Command-Line Tools
-- Various Network Protocols (SSH, RDH, DNS, HTTP/S, ICMP)
+- Various Network Protocols (ICMP, SSH, DHCP, DNS, RDP)
 - Wireshark (Protocol Analyzer)
 
 <h2>Operating Systems Used </h2>
 
-- Windows 11 (25H2)
-- Ubuntu Server 24.04
+- Windows 11 (24H2)
+- Ubuntu Server 20.04
 
 <h2>High-Level Steps</h2>
 
-First, I created two virtual machines - one with Windows 11 and another with Ubuntu. Using Remote Desktop, I connected to the Windows 10 VM to proceed with the lab. Inside the Windows 11 VM, I installed Wireshark and opened it along with Windows PowerShell. I initiated a continuous ping to the Ubuntu VM from the Windows 10 VM, monitoring the ICMP traffic in Wireshark. To observe the impact, I added an inbound rule in the Ubuntu VM's Network Security Group to block ICMP traffic, causing the pings to fail. Afterwards, I re-enabled ICMP traffic in the Ubuntu VM's Network Security Group, which restored the ping functionality. I then ended the ping activity. Next, I SSHed into the Ubuntu VM and observed the SSH traffic in Wireshark. After completing the observation, I exited the SSH session. In the Windows 10 VM, I attempted to obtain a new IP address by running the command "ipconfig /renew" and monitored the DHCP traffic in Wireshark. Using the nslookup command, I examined the DNS traffic in Wireshark. Lastly, I observed the ongoing RDP (Remote Desktop Protocol) traffic in Wireshark. As a final step, I deleted the Resource Groups in Azure.
+- Create a Resource Group
+- Create a Virtual Machine
+- Observe ICMP Traffic
+- Observe SSH Traffic
+- Observe DHCP Traffic
+- Observe DNS Traffic
+- Observe RDP Traffic
 
 <h2>Actions and Observations</h2>
-
-![image](https://github.com/JaMyraJones/azure-network-protocols/assets/145633544/0cd23946-50ae-4291-99d1-6899a48b82c2)
-
-To start this lab, I created two virtual machines - one with Windows 10 and the other with Ubuntu. It was essential to ensure that both VMs were in the same virtual network (vnet) and subnet. In this case, VM1 represented the Windows 10 VM, while VM2 represented the Ubuntu VM.
+</br>
+</br>
+<h3 align="center">
+  Set up your virtual environment
+</h3>
+</br>
+<p>
+  First, let's create our Resource Group inside our Azure subscription.
+</p>
+<p>
+  <img src="https://i.imgur.com/dOAeXqs.png" height="75%" width="100%" alt="Resource Group"/>
+</p>
+<p>
+  Now create your Windows virtual machine. I typically create the VM in (US) East US.
+</p>
+<p>
+  While creating the VM, select the previously created Resource Group and allow it to create a new Virtual Network (Vnet) and Subnet. Make sure to use the password option under the <strong>Administrator Account</strong> section:
+</p>
+<p>
+  <img src="https://i.imgur.com/PHOwjLh.png" height="75%" width="100%" alt="Windows VM"/>
+</p>
+<p>
+  Create an Ubuntu virtual machine.
+</p>
+<p>
+  While creating the VM, select the previously created Resource Group and allow it to create a new Virtual Network (Vnet) and Subnet. Make sure to use the password option under the <strong>Administrator Account</strong> section (not seen in image):
+</p>
+<p>
+  <img src="https://i.imgur.com/N5zwQUH.png" height="75%" width="100%" alt="Ubuntu VM"/>
+</p>
+<p>
+  Observe Your Virtual Network within Network Watcher:
+</p>
+<p>
+  <img src="https://i.imgur.com/Pn02GXF.png" height="75%" width="100%" alt="Network Watcher"/>
 </p>
 <br />
-
-![image](https://github.com/JaMyraJones/azure-network-protocols/assets/145633544/f209ca36-36a9-40bd-a87f-9f07497a4b1b)
-
-n the top right corner, there was a public IP address. I copied this address and used Remote Desktop to establish a connection with VM1 for the lab.
+<br />
+<h3 align="center">
+  Now let's observe some ICMP traffic
+</h3>
+<br />
+<p>
+  Remote into your Windows 10 Virtual Machine, install Wireshark, open it and filter for ICMP traffic only.
+</p>
+<p>
+  <img src="https://i.imgur.com/0BsfNiS.jpg" height="75%" width="100%" alt="Microsoft Remote Desktop - Mac"/>
+</p>
+<p>
+  Retrieve the private IP address of the Ubuntu VM and attempt to ping it from within the Windows 10 VM. Observe ping requests and replies within WireShark:
+</p>
+<p>
+  <img src="https://i.imgur.com/yYGKuAy.png" height="75%" width="100%" alt="Ubuntu private IP"/>
+  <img src="https://i.imgur.com/3h9QSEY.png" height="75%" width="100%" alt="ICMP traffic - private IP"/>
+</p>
+<p>
+  Attempt to ping a public website (such as www.google.com) and observe the traffic in WireShark:
+</p>
+<p>
+  <img src="https://i.imgur.com/YduMvc7.png" height="75%" width="100%" alt="ICMP traffic - public IP"/>
+</p>
+<p>
+  Initiate a perpetual/non-stop ping from your Windows 10 VM to your Ubuntu VM:
+</p>
+<p>
+  <img src="https://i.imgur.com/bihftKK.png" height="75%" width="100%" alt="ICMP traffic - perpetual ping"/>
+</p>
+<p>
+  Open the Network Security Group your Ubuntu VM is using and disable incoming (inbound) ICMP traffic, while back in the Windows 10 VM, observe the ICMP traffic in WireShark and the command line Ping activity:
+</p>
+<p>
+  <img src="https://i.imgur.com/ovGk5dq.png" height="75%" width="100%" alt="ICMP traffic - perpetual ping"/>
+  <img src="https://i.imgur.com/NjuUANI.png" height="75%" width="100%" alt="ICMP traffic - ICMP denied"/>
+</p>
+<p>
+  Re-enable ICMP traffic for the Network Security Group in your Ubuntu VM and back in the Windows 10 VM, observe the ICMP traffic in WireShark and the command line ping activity (should start working again).Finally, stop the ping activity:
+</p>
+<p>
+  <img src="https://i.imgur.com/nZbl2sA.png" height="75%" width="100%" alt="ICMP traffic - ICMP re-enabled"/>
 </p>
 <br />
-
-![image](https://github.com/JaMyraJones/azure-network-protocols/assets/145633544/e0c61448-9d72-4fa1-8d4c-ff2b1e8bb5f0)
-
-Within VM1, I installed Wireshark using Microsoft Edge. After opening Wireshark and Windows PowerShell, I filtered the traffic to focus on ICMP (ping) packets. To perform the lab tasks, I initiated a continuous ping to VM2 using its private IP address. Each ping request and reply between VM1 and VM2 was captured by Wireshark, providing a clear view of the ICMP traffic.
+<br />
+<h3 align="center">
+  Time to observe SSH traffic
+</h3>
+<br />
+<p>
+  Back in Wireshark, filter for SSH traffic only and from your Windows 10 VM, “SSH into” your Ubuntu virtual machine (via its private IP address). Type commands (ls, pwd, etc) into the linux SSH connection and observe SSH traffic spam in WireShark.
+</p>
+</p>
+  Exit the SSH connection by typing ‘exit’ and pressing [return]:
+</p>
+  <img src="https://i.imgur.com/6YEDJKu.png" height="75%" width="100%" alt="SSH traffic"/>
+<p>
+<br />
+<br />
+<h3 align="center">
+  Next, we're going to observe DHCP Traffic
+</h3>
+<br />
+<p>
+  Back in Wireshark, filter for DHCP traffic only. From your Windows 10 VM, attempt to issue your VM a new IP address from the command line (ipconfig /renew)
+</p>
+Observe the DHCP traffic appearing in WireShark:
+</p>
+<p>
+  <img src="https://i.imgur.com/mKyAHFr.png" height="75%" width="100%" alt="DHCP traffic"/>
 </p>
 <br />
-
-![image](https://github.com/JaMyraJones/azure-network-protocols/assets/145633544/783a61a5-3229-4587-9776-dfb7f9b9c541)
-
-Once I confirmed the successful ping, I accessed VM2's Network Security Group and added an inbound rule to block ICMP traffic. This configuration change effectively prevented VM2 from receiving ping requests.
+<br />
+<h3 align="center">
+  Let's now observe our DNS traffic next
+</h3>
+<br />
+<p>
+  Back in Wireshark, filter for DNS traffic only.
+</p>
+<p>
+  From your Windows 10 VM within a command line, use nslookup to see what google.com and disney.com’s IP addresses are and observe the DNS traffic being shown in WireShark:
+</p>
+<p>
+  <img src="https://i.imgur.com/mYZ8CAK.png" height="75%" width="100%" alt="DNS traffic"/>
 </p>
 <br />
-
-![image](https://github.com/JaMyraJones/azure-network-protocols/assets/145633544/e3d73592-5da4-4b95-8212-28fde88a6a89)
-
-As expected, after blocking ICMP traffic, the ping requests from VM1 to VM2 started to time out. Wireshark's "Info" section indicated that while VM1 continued to send requests, there were no responses from VM2, accompanied by a "no response found!" message.
-</p>
 <br />
-
-![image](https://github.com/JaMyraJones/azure-network-protocols/assets/145633544/71bdf33b-18c6-437a-8b3d-9036b9257130)
-
-I then went back to VM2's Network Security Group and selected the rule I created. By choosing the "Allow" option under "Action," I restored the ability for VM2 to receive incoming ICMP traffic.
-</p>
+<h3 align="center">
+  Finally, we will observe RDP traffic to finish up this tutorial
+</h3>
 <br />
-
-![image](https://github.com/JaMyraJones/azure-network-protocols/assets/145633544/362fbcd4-1135-4ff0-8c4c-e5ea28b7a141)
-
-Now that ICMP traffic was allowed again, both the PowerShell terminal and Wireshark showed that VM2 was sending reply packets. To conclude the ICMP observation, I ended the ping activity in PowerShell.
+<p>
+  Back in Wireshark, filter for RDP traffic only using "tcp.port==3389".
 </p>
-<br />
-
-![image](https://github.com/JaMyraJones/azure-network-protocols/assets/145633544/73e3746f-51e7-416d-8e3f-f34e7ee4b1fc)
-
-To examine DHCP traffic, I filtered Wireshark for DHCP packets and attempted to assign a new IP address to VM1 using the "ipconfig /renew" command. Although the private IP address remained unchanged, Wireshark captured the DHCP request and acknowledgement, indicating the generation of DHCP traffic.
+<p>
+  You'll be obseving a non-stop stream of traffic. Do you know why there is constant traffic in our tcp.port==3389?
 </p>
-<br />
-
-![image](https://github.com/JaMyraJones/azure-network-protocols/assets/145633544/b696249b-5b04-4f68-a2a6-8e65b16f9b12)
-Next, I filtered Wireshark for DNS traffic and executed the "nslookup" command for google.com. The terminal displayed both IPv4 and IPv6 addresses, while Wireshark's "Info" section revealed the presence of A and AAAA records corresponding to the IP address types.
+<p>
+  The answer is because the RDP (protocol) is constantly showing you a live stream from one computer to another, therefor traffic is always being transmitted:
 </p>
-<br />
-
-![image](https://github.com/JaMyraJones/azure-network-protocols/assets/145633544/1f8c8f5a-e33a-4cab-ace3-53e0b98b4643)
-
-Lastly, I utilized Wireshark to monitor RDP (Remote Desktop Protocol) traffic. Since RDP traffic was already being generated by my physical computer's connection to the VM, I did not need to rely on the PowerShell terminal. With continuous RDP traffic, Wireshark displayed each packet transmitted in real-time. While I typically filtered protocols by name in Wireshark, I decided to filter RDP traffic using its port number (tcp.port == 3389), ensuring accurate capture of the packets.
-
-
-And that's a wrap! Capturing and analyzing packets is very interesting!
-
-
+<p>
+  <img src="https://i.imgur.com/hNlhTVp.png" height="75%" width="100%" alt="RDP traffic"/>
 </p>
-<br />
+<p>
+  Now that we're finished observing the network, DON'T FORGET TO CLEAN UP YOUR AZURE ENVIRONMENT! This will prevent you from incurring additional charges and you won't be left surprised!
+</p>
+<p>
+  Close your Remote Desktop connection, delete the Resource Group(s) created at the beginning of this tutorial, and verify Resource Group deletion. You'll typically be notified or can click unde the bell notification just to make sure.
+</p>
+</p>
